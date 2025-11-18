@@ -129,5 +129,13 @@ async def yfinance_analyst_tool(question: str) -> str:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="sse", host="127.0.0.1", port=8000)
+    # mcp.run(transport="sse", host="127.0.0.1", port=8000)
     # mcp.run()
+    # Render define PORT (padrão 10000) :contentReference[oaicite:0]{index=0}
+    port = int(os.getenv("PORT", "8000"))
+    mcp.run(
+        transport="http",   # recomendado para deploy web :contentReference[oaicite:1]{index=1}
+        host="0.0.0.0",     # obrigatório no Render :contentReference[oaicite:2]{index=2}
+        port=port,
+        path="/mcp"         # endpoint MCP → ex: https://...onrender.com/mcp
+    )
