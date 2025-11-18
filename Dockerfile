@@ -1,7 +1,7 @@
 FROM python:3.11-slim
 
 # 1) Pasta de trabalho
-WORKDIR /
+WORKDIR /app
 
 # 2) Dependências de sistema (node + npm → necessário para npx)
 RUN apt-get update && apt-get install -y \
