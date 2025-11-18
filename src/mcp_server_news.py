@@ -56,6 +56,7 @@ async def yfinance_analyst_tool(question: str) -> str:
             tasks=[quake_task],
             process=Process.sequential,
             verbose=True,
+            tracing=True,
         )
 
         result = await crew.kickoff_async()
