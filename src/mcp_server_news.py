@@ -34,7 +34,7 @@ async def yfinance_analyst_tool(question: str) -> str:
 
     llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0.3)
 
-    async with MCPServerAdapter(quake_params) as quake_tools:
+    with MCPServerAdapter(quake_params) as quake_tools:
         quake_agent = Agent(
             role="Earthquake Data Analyst",
             goal="Analyze recent earthquakes and seismic risk using the earthquake MCP tools.",

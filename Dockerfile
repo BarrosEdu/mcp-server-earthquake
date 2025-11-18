@@ -18,6 +18,7 @@ ENV PATH="/root/.local/bin:${PATH}"
 
 # 4) Copiar requirements e instalar dependências python (via pip)
 COPY requirements.txt .
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 5) Copiar o resto do código

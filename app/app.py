@@ -6,8 +6,8 @@ import pandas as pd
 import warnings
 warnings.filterwarnings("ignore")
 
-st.set_page_config(page_title="Finance Analyst Chat", page_icon="📊", layout="wide")
-st.title("Finance Analyst – AI Chat Interface")
+st.set_page_config(page_title="Risk Analyst Chat", page_icon="📊", layout="wide")
+st.title("Earthquake Risk Analyst – AI Chat Interface")
 
 st.markdown("""""")
 
