@@ -23,7 +23,7 @@ for message in st.session_state.messages:
 
 # Helper: Call the MCP agent server via SSE
 async def call_agent(question: str):
-    client = Client("http://127.0.0.1:8000/sse")  # ajuste se mudar a porta/URL
+    client = Client("https://mcp-server-earthquake.onrender.com/mcp")  # ajuste se mudar a porta/URL
     async with client:
         result = await client.call_tool(
             "yfinance_analyst",

@@ -17,7 +17,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
 
 # 4) Instalar libs Python
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv install --no-cache-dir -r requirements.txt
 
 # 5) Copiar o código do projeto
 COPY . .
