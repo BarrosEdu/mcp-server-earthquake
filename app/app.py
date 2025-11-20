@@ -26,7 +26,7 @@ async def call_agent(question: str):
     client = Client("https://mcp-server-earthquake.onrender.com/mcp")  # ajuste se mudar a porta/URL
     async with client:
         result = await client.call_tool(
-            "yfinance_analyst",
+            "earthquake_analyst",
             {"question": question},
         )
 

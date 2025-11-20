@@ -9,21 +9,21 @@ import os
 
 
 AGENTOPS_API_KEY = os.getenv("AGENTOPS_API_KEY")
-agentops.init(AGENTOPS_API_KEY, default_tags=["yfinance_analyst"])
+agentops.init(AGENTOPS_API_KEY, default_tags=["earthquake_analyst"])
 
 # Load env vars
 load_dotenv()
 
 # Instantiate MCP server
-mcp = FastMCP("yfinance-agent-server")
+mcp = FastMCP("earthquake-agent-server")
 
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent  # sobe de src/ para raiz
 QUAKE_SCRIPT = BASE_DIR / "mcp" / "earthquake_mcp_server.py"
 
-@mcp.tool(name="yfinance_analyst")
-async def yfinance_analyst_tool(question: str) -> str:
+@mcp.tool(name="earthquake_analyst")
+async def earthquake_analyst_tool(question: str) -> str:
     """(Versão de teste) Usa apenas o MCP de earthquake para validar o Render."""
 
     quake_params = StdioServerParameters(
@@ -37,20 +37,40 @@ async def yfinance_analyst_tool(question: str) -> str:
     with MCPServerAdapter(quake_params) as quake_tools:
         quake_agent = Agent(
             role="Earthquake Data Analyst",
-            goal="Analyze recent earthquakes and seismic risk using the earthquake MCP tools.",
-            backstory="A specialist agent focused on querying and interpreting earthquake data.",
+            goal=(
+                "Provide expert-level earthquake and seismic risk analysis ONLY for questions "
+                "explicitly related to seismic activity. For any unrelated topic, decline politely "
+                "using the exact sentence: 'I am only configured to answer questions about earthquakes and seismic risk.'"
+            ),
+            backstory="You are a domain-restricted seismology analyst. You are STRICTLY forbidden from answering other topics.",
             tools=quake_tools,
             llm=llm,
             verbose=True,
         )
 
         quake_task = Task(
-            description=f"Analyze earthquake risk or recent events related to: {question}",
-            expected_output="A summary of relevant earthquakes and risk insights for the area or period requested.",
+            description=(
+                f"Analyze seismic activity strictly related to the question: '{question}'. "
+                "If the question is NOT related to earthquakes, magnitudes, seismic risk, "
+                "geological hazards, USGS data, or epicenter analysis, you MUST respond: "
+                "'I am only configured to answer questions about earthquakes and seismic risk.'"
+            ),
+            expected_output=(
+                "One of the following:\n"
+                "1) If the question IS about earthquakes:\n"
+                "   - A structured analysis including:\n"
+                "     - recent seismic events\n"
+                "     - magnitudes\n"
+                "     - risk score\n"
+                "     - geographic interpretation\n"
+                "     - clear executive-level summary\n"
+                "\n"
+                "2) If the question IS NOT about earthquakes:\n"
+                "   - The exact sentence: 'I am only configured to answer questions about earthquakes and seismic risk.'"
+            ),
             tools=quake_tools,
             agent=quake_agent,
         )
-
         crew = Crew(
             agents=[quake_agent],
             tasks=[quake_task],
