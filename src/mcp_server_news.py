@@ -22,6 +22,7 @@ mcp = FastMCP("earthquake-agent-server")
 BASE_DIR = Path(__file__).resolve().parent.parent
 QUAKE_SCRIPT = BASE_DIR / "mcp" / "earthquake_mcp_server.py"
 
+
 @mcp.tool(name="earthquake_analyst")
 async def earthquake_analyst_tool(question: str) -> str:
     """Earthquake analysis tool using MCP server."""
@@ -33,7 +34,7 @@ async def earthquake_analyst_tool(question: str) -> str:
     )
 
     try:
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+        llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0.3)
     except Exception as e:
         return f"Error initializing LLM: {str(e)}"
 
@@ -104,9 +105,4 @@ async def earthquake_analyst_tool(question: str) -> str:
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))
-    mcp.run(
-        transport="http",
-        host="0.0.0.0",
-        port=port,
-        path="/mcp"
-    )
+    mcp.run(transport="http", host="0.0.0.0", port=port, path="/mcp")
