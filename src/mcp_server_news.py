@@ -25,7 +25,7 @@ QUAKE_SCRIPT = BASE_DIR / "mcp" / "earthquake_mcp_server.py"
 
 @mcp.tool(name="earthquake_analyst")
 async def earthquake_analyst_tool(question: str) -> str:
-    """Earthquake analysis tool using MCP server."""
+    """Earthquake analysis tool using the earthquake MCP server."""
 
     quake_params = StdioServerParameters(
         command="python",
@@ -35,36 +35,56 @@ async def earthquake_analyst_tool(question: str) -> str:
 
     try:
         llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0.3)
-    except Exception as e:
-        return f"Error initializing LLM: {str(e)}"
+    except Exception as exc:
+        return f"Error initializing LLM: {exc}"
 
     try:
+        # Mantém TUDO dentro do contexto do adapter
         with MCPServerAdapter(quake_params) as quake_tools:
             quake_agent = Agent(
                 role="Earthquake Data Analyst",
-                goal="Provide expert-level earthquake and seismic risk analysis for earthquake-related questions.",
-                backstory="You are a domain-restricted seismology analyst. You are STRICTLY forbidden from answering other topics.",
+                goal=(
+                    "Provide expert-level analysis of recent earthquakes and seismic risk. "
+                    "Assume the user's question is related to earthquakes or seismic activity."
+                ),
+                backstory=(
+                    "You are a seismology specialist. You use the provided tools to query "
+                    "recent earthquakes, magnitudes and locations, and then explain the "
+                    "results in clear language."
+                ),
                 tools=quake_tools,
                 llm=llm,
                 verbose=True,
             )
 
-        quake_task = Task(
-            description=f"Answer the earthquake-related question: '{question}'. Use available tools to get recent earthquake data and provide a comprehensive analysis.",
-            expected_output="A comprehensive earthquake analysis including recent seismic events, magnitudes, risk assessment, and geographic interpretation.",
-            tools=quake_tools,
-            agent=quake_agent,
-        )
-        crew = Crew(
-            agents=[quake_agent],
-            tasks=[quake_task],
-            process=Process.sequential,
-            verbose=True,
-            tracing=True,
-        )
+            quake_task = Task(
+                description=(
+                    f"Answer the user's question about earthquakes: '{question}'. "
+                    "Use the available tools to fetch recent earthquake data if needed, "
+                    "and provide a concise but informative analysis."
+                ),
+                expected_output=(
+                    "A clear paragraph (or a short set of bullet points) summarizing:\n"
+                    "- the most recent relevant earthquakes for the question\n"
+                    "- magnitudes and locations\n"
+                    "- any notable seismic risk or trend\n"
+                    "If there is no recent activity, explicitly say that."
+                ),
+                tools=quake_tools,
+                agent=quake_agent,
+            )
 
-        result = await crew.kickoff_async()
+            crew = Crew(
+                agents=[quake_agent],
+                tasks=[quake_task],
+                process=Process.sequential,
+                verbose=True,
+                tracing=True,
+            )
 
+            result = await crew.kickoff_async()
+
+        # Parse do resultado
         if isinstance(result, dict):
             tasks_output = result.get("tasks_output", [])
             if (
@@ -74,20 +94,20 @@ async def earthquake_analyst_tool(question: str) -> str:
                 and "raw" in tasks_output[0]
             ):
                 return tasks_output[0]["raw"]
-            elif "raw" in result:
+            if "raw" in result:
                 return result["raw"]
 
         return str(result)
-    except Exception as e:
-        return f"Error running earthquake analysis: {str(e)}"
+
+    except Exception as exc:
+        return f"Error running earthquake analysis: {exc}"
 
 
 if __name__ == "__main__":
-
     port = int(os.getenv("PORT", "8000"))
     mcp.run(
-        transport="http",   # recomendado para deploy web :contentReference[oaicite:1]{index=1}
-        host="0.0.0.0",     # obrigatório no Render :contentReference[oaicite:2]{index=2}
+        transport="http",
+        host="0.0.0.0",
         port=port,
-        path="/mcp"         # endpoint MCP → ex: https://...onrender.com/mcp
+        path="/mcp",
     )
