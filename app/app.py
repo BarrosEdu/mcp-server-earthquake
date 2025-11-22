@@ -4,6 +4,7 @@ from fastmcp import Client
 import json
 import pandas as pd
 import warnings
+
 warnings.filterwarnings("ignore")
 
 st.set_page_config(page_title="Risk Analyst Chat", page_icon="📊", layout="wide")
@@ -23,7 +24,9 @@ for message in st.session_state.messages:
 
 # Helper: Call the MCP agent server via SSE
 async def call_agent(question: str):
-    client = Client("https://mcp-server-earthquake.onrender.com/mcp")  # ajuste se mudar a porta/URL
+    client = Client(
+        "https://mcp-server-earthquake.onrender.com/mcp"
+    )  # ajuste se mudar a porta/URL
     async with client:
         result = await client.call_tool(
             "earthquake_analyst",
@@ -58,7 +61,6 @@ async def call_agent(question: str):
 
         # 4) Fallback: repr do objeto (último caso)
         return str(result)
-
 
 
 # Accept user input

@@ -42,11 +42,7 @@ async def earthquake_analyst_tool(question: str) -> str:
         with MCPServerAdapter(quake_params) as quake_tools:
             quake_agent = Agent(
                 role="Earthquake Data Analyst",
-                goal=(
-                    "Provide expert-level earthquake and seismic risk analysis ONLY for questions "
-                    "explicitly related to seismic activity. For any unrelated topic, decline politely "
-                    "using the exact sentence: 'I am only configured to answer questions about earthquakes and seismic risk.'"
-                ),
+                goal="Provide expert-level earthquake and seismic risk analysis for earthquake-related questions.",
                 backstory="You are a domain-restricted seismology analyst. You are STRICTLY forbidden from answering other topics.",
                 tools=quake_tools,
                 llm=llm,
@@ -54,25 +50,8 @@ async def earthquake_analyst_tool(question: str) -> str:
             )
 
         quake_task = Task(
-            description=(
-                f"Analyze seismic activity strictly related to the question: '{question}'. "
-                "If the question is NOT related to earthquakes, magnitudes, seismic risk, "
-                "geological hazards, USGS data, or epicenter analysis, you MUST respond: "
-                "'I am only configured to answer questions about earthquakes and seismic risk.'"
-            ),
-            expected_output=(
-                "One of the following:\n"
-                "1) If the question IS about earthquakes:\n"
-                "   - A structured analysis including:\n"
-                "     - recent seismic events\n"
-                "     - magnitudes\n"
-                "     - risk score\n"
-                "     - geographic interpretation\n"
-                "     - clear executive-level summary\n"
-                "\n"
-                "2) If the question IS NOT about earthquakes:\n"
-                "   - The exact sentence: 'I am only configured to answer questions about earthquakes and seismic risk.'"
-            ),
+            description=f"Answer the earthquake-related question: '{question}'. Use available tools to get recent earthquake data and provide a comprehensive analysis.",
+            expected_output="A comprehensive earthquake analysis including recent seismic events, magnitudes, risk assessment, and geographic interpretation.",
             tools=quake_tools,
             agent=quake_agent,
         )
@@ -104,5 +83,11 @@ async def earthquake_analyst_tool(question: str) -> str:
 
 
 if __name__ == "__main__":
+
     port = int(os.getenv("PORT", "8000"))
-    mcp.run(transport="http", host="0.0.0.0", port=port, path="/mcp")
+    mcp.run(
+        transport="http",   # recomendado para deploy web :contentReference[oaicite:1]{index=1}
+        host="0.0.0.0",     # obrigatório no Render :contentReference[oaicite:2]{index=2}
+        port=port,
+        path="/mcp"         # endpoint MCP → ex: https://...onrender.com/mcp
+    )
